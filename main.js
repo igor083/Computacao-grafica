@@ -33,7 +33,7 @@ function inp_to_ndc_centered(dcx, dcy, width, height) {
   return { ndc_x, ndc_y };
 }
 
-//NDC [0,50]
+// NDC [0,50]
 
 function user_to_ndc_50(x, y, win) {
   const ndc_x = (50 * (x - win.x_min)) / (win.x_max - win.x_min);
@@ -86,6 +86,30 @@ function initializeCanvas() {
   ctx.stroke();
 }
 
+// --- FUNÇÕES DE COR ---
+
+function rgb24to12(r, g, b) {
+  let r4 = Math.round((r / 255) * 15);
+  let g4 = Math.round((g / 255) * 15);
+  let b4 = Math.round((b / 255) * 15);
+  return { r4, g4, b4 };
+}
+
+function rgb12to24(r4, g4, b4) {
+  let r = Math.round((r4 / 15) * 255);
+  let g = Math.round((g4 / 15) * 255);
+  let b = Math.round((b4 / 15) * 255);
+  return { r, g, b };
+}
+
+function drawColorPixel(x, y, r, g, b) {
+  const reduced = rgb24to12(r, g, b);
+  const expanded = rgb12to24(reduced.r4, reduced.g4, reduced.b4);
+
+  ctx.fillStyle = `rgb(${expanded.r}, ${expanded.g}, ${expanded.b})`;
+  ctx.fillRect(x, y, 2, 2);
+}
+
 // --- LÓGICA PRINCIPAL E EVENTOS ---
 
 function handlePlot() {
@@ -123,7 +147,11 @@ function handlePlot() {
   )})`;
 
   initializeCanvas();
+
   drawPixel({ x: dc.dcx, y: dc.dcy });
+
+  //Pixels reduzidos para 12 bits 
+  drawColorPixel(dc.dcx + 3, dc.dcy, 0, 0, 255);
 }
 
 // --- INICIALIZAÇÃO ---
