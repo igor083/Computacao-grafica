@@ -69,88 +69,85 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Substitua a função aplicarTransformacao por esta versão corrigida
-function aplicarTransformacao(tipo) {
-  if (!ultimoObjeto) {
-    alert("Desenhe algo primeiro!");
-    return;
-  }
+  function aplicarTransformacao(tipo) {
+    if (!ultimoObjeto) {
+      alert("Desenhe algo primeiro!");
+      return;
+    }
 
-  let m;
+    let m;
 
-  if (tipo === "translacao") {
-    let dx = parseFloat(document.getElementById("dx").value);
-    let dy = parseFloat(document.getElementById("dy").value);
-    m = [
-      [1, 0, dx],
-      [0, 1, dy],
-      [0, 0, 1],
-    ];
-  } else if (tipo === "escala") {
-    let sx = parseFloat(document.getElementById("sx").value);
-    let sy = parseFloat(document.getElementById("sy").value);
-    // Para escala correta, precisamos escalar a partir da origem
-    m = [
-      [sx, 0, 0],
-      [0, sy, 0],
-      [0, 0, 1],
-    ];
-  } else if (tipo === "rotacao") {
-    let ang = (parseFloat(document.getElementById("angulo").value) * Math.PI) / 180;
-    m = [
-      [Math.cos(ang), -Math.sin(ang), 0],
-      [Math.sin(ang), Math.cos(ang), 0],
-      [0, 0, 1],
-    ];
-  }
-
-  clearCanvas();
-
-  if (ultimoObjeto.tipo === "reta") {
-    let [p1, p2] = ultimoObjeto.pontos;
-    
-    // Aplica a transformação a cada ponto
-    let t1 = multiplicarMatriz([p1[0], p1[1], 1], m);
-    let t2 = multiplicarMatriz([p2[0], p2[1], 1], m);
-    
-    // Desenha a reta transformada
-    retaPontoMedio(t1[0], t1[1], t2[0], t2[1]);
-    
-    // Atualiza o último objeto
-    ultimoObjeto = {
-      tipo: "reta",
-      pontos: [
-        [t1[0], t1[1]],
-        [t2[0], t2[1]],
-      ],
-    };
-  } else if (ultimoObjeto.tipo === "circunferencia") {
-    let [centro] = ultimoObjeto.pontos;
-    let [xc, yc, r] = centro;
-    
-    // Para circunferências, a abordagem correta é redesenhar com o centro transformado
-    // e raio ajustado para escala
-    let novoCentro = multiplicarMatriz([xc, yc, 1], m);
-    
-    // Ajuste do raio para transformações de escala
-    let novoRaio = r;
-    if (tipo === "escala") {
-      // Para escala, usamos a média dos fatores de escala para ajustar o raio
+    if (tipo === "translacao") {
+      let dx = parseFloat(document.getElementById("dx").value);
+      let dy = parseFloat(document.getElementById("dy").value);
+      m = [
+        [1, 0, dx],
+        [0, 1, dy],
+        [0, 0, 1],
+      ];
+    } else if (tipo === "escala") {
       let sx = parseFloat(document.getElementById("sx").value);
       let sy = parseFloat(document.getElementById("sy").value);
-      novoRaio = r * Math.sqrt(sx * sx + sy * sy) / Math.sqrt(2); // Aproximação melhor
+      m = [
+        [sx, 0, 0],
+        [0, sy, 0],
+        [0, 0, 1],
+      ];
+    } else if (tipo === "rotacao") {
+      let ang =
+        (parseFloat(document.getElementById("angulo").value) * Math.PI) / 180;
+      m = [
+        [Math.cos(ang), -Math.sin(ang), 0],
+        [Math.sin(ang), Math.cos(ang), 0],
+        [0, 0, 1],
+      ];
     }
-    
-    // Para rotação, uma circunferência não muda visualmente
-    circPontoMedio(novoCentro[0], novoCentro[1], novoRaio);
-    
-    // Atualiza o último objeto
-    ultimoObjeto = {
-      tipo: "circunferencia",
-      pontos: [[novoCentro[0], novoCentro[1], novoRaio]],
-    };
+
+    clearCanvas(); // limpa fundo e redesenha eixos
+
+    if (ultimoObjeto.tipo === "reta") {
+      let [p1, p2] = ultimoObjeto.pontos;
+
+      // aplica matriz a cada ponto (coluna)
+      let t1 = multiplicarMatriz([p1[0], p1[1], 1], m);
+      let t2 = multiplicarMatriz([p2[0], p2[1], 1], m);
+
+      // evita bug de reta degenerada
+      if (t1[0] === t2[0] && t1[1] === t2[1]) {
+        alert("A reta colapsou em um ponto após a transformação.");
+        return;
+      }
+
+      // redesenha reta
+      retaPontoMedio(t1[0], t1[1], t2[0], t2[1]);
+
+      // salva novo estado
+      ultimoObjeto = {
+        tipo: "reta",
+        pontos: [
+          [t1[0], t1[1]],
+          [t2[0], t2[1]],
+        ],
+      };
+    } else if (ultimoObjeto.tipo === "circunferencia") {
+      let [c] = ultimoObjeto.pontos;
+      let centro = multiplicarMatriz([c[0], c[1], 1], m);
+      let novoRaio = c[2];
+
+      // escala altera o raio (média dos fatores em x e y)
+      if (tipo === "escala") {
+        novoRaio = Math.abs(Math.round(novoRaio * ((m[0][0] + m[1][1]) / 2)));
+        if (novoRaio < 1) novoRaio = 1; // nunca deixar raio zero
+      }
+
+      circPontoMedio(centro[0], centro[1], novoRaio);
+
+      ultimoObjeto = {
+        tipo: "circunferencia",
+        pontos: [[centro[0], centro[1], novoRaio]],
+      };
+    }
   }
-}
 
   // Deixa a função acessível aos botões inline do HTML
   window.aplicarTransformacao = aplicarTransformacao;
