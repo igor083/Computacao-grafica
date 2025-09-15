@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Algoritmos Gráficos</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="config">
+      <h1>Algoritmos Gráficos em JS</h1>
+      <div class="controls">
+        <label for="largura">Largura da tela:</label>
+        <input type="number" id="largura" value="600" min="200" max="1000" />
+
+        <label for="altura">Altura da tela:</label>
+        <input type="number" id="altura" value="400" min="200" max="800" />
+
+        <button id="redimensionar">Redimensionar</button>
+      </div>
+
+      <div class="controls">
+        <label>Escolha o algoritmo:</label>
+        <select id="algoritmo">
+          <optgroup label="Retas">
+            <option value="dda">Reta - DDA</option>
+            <option value="pontoMedioReta">Reta - Ponto Médio</option>
+          </optgroup>
+          <optgroup label="Circunferência">
+            <option value="circPontoMedio">Circunferência - Ponto Médio</option>
+            <option value="circPolinomial">Circunferência - Polinomial</option>
+            <option value="circTrigonometrico">
+              Circunferência - Trigonométrico
+            </option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div id="inputs" class="controls"></div>
+
+      <div class="controls">
+        <button id="desenhar">Desenhar</button>
+        <button id="limpar">Limpar</button>
+      </div>
+    </div>
+    <div class="main-screen">
+      <div class="tela">
+        <canvas id="tela" width="600" height="400"></canvas>
+      </div>
+
+      <div class="transformacoes">
+        <h2>Transformações Geométricas</h2>
+        <div class="controls">
+          <label>Translação (dx, dy):</label>
+          <input type="number" id="dx" value="50" />
+          <input type="number" id="dy" value="30" />
+          <button onclick="aplicarTransformacao('translacao')">Aplicar</button>
+        </div>
+
+        <div class="controls">
+          <label>Escala (sx, sy):</label>
+          <input type="number" id="sx" value="1.5" step="0.1" />
+          <input type="number" id="sy" value="1.5" step="0.1" />
+          <button onclick="aplicarTransformacao('escala')">Aplicar</button>
+        </div>
+
+        <div class="controls">
+          <label>Rotação (graus):</label>
+          <input type="number" id="angulo" value="30" />
+          <button onclick="aplicarTransformacao('rotacao')">Aplicar</button>
+        </div>
+      </div>
+    </div>
+    <script src="./utils.js"></script>
+    <script src="./draw.js"></script>
+    <script src="./transform.js"></script>
+    <script src="./main.js"></script>
+  </body>
+</html>
