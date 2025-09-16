@@ -1,5 +1,3 @@
-// Multiplicação de ponto por matriz homogênea 3x3
-// Considera ponto como coluna [x, y, 1]^T e aplica: res = M * ponto
 function multiplicarMatriz(ponto, matriz) {
   let [x, y, w] = ponto;
   let res = [0, 0, 0];

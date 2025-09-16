@@ -36,8 +36,6 @@ function retaPontoMedio(x1, y1, x2, y2) {
   }
 }
 
-/* Circunferências*/
-
 function circPontoMedio(xc, yc, r) {
   let x = 0,
     y = r;

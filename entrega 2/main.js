@@ -1,9 +1,7 @@
-// Garante que o DOM esteja pronto antes de buscar elementos
 document.addEventListener("DOMContentLoaded", () => {
   const inputDiv = document.getElementById("inputs");
   const selectAlg = document.getElementById("algoritmo");
 
-  // Variável global (neste escopo) para armazenar o último objeto desenhado
   let ultimoObjeto = null;
 
   function gerarInputs() {
@@ -29,7 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
   selectAlg.onchange = gerarInputs;
   gerarInputs();
 
-  /* ---------- Desenho ---------- */
   function desenharCena() {
     clearCanvas();
 
@@ -41,11 +38,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const x2 = parseFloat(document.getElementById("x2").value);
       const y2 = parseFloat(document.getElementById("y2").value);
 
-      // desenha
       if (alg === "dda") retaDDA(x1, y1, x2, y2);
       else retaPontoMedio(x1, y1, x2, y2);
 
-      // salva objeto
       ultimoObjeto = {
         tipo: "reta",
         pontos: [
@@ -69,92 +64,82 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-function aplicarTransformacao(tipo) {
-  if (!ultimoObjeto) {
-    alert("Desenhe algo primeiro!");
-    return;
-  }
+  function aplicarTransformacao(tipo) {
+    if (!ultimoObjeto) {
+      alert("Desenhe algo primeiro!");
+      return;
+    }
 
-  let m;
+    let m;
 
-  if (tipo === "translacao") {
-    let dx = parseFloat(document.getElementById("dx").value);
-    let dy = parseFloat(document.getElementById("dy").value);
-    m = [
-      [1, 0, dx],
-      [0, 1, dy],
-      [0, 0, 1],
-    ];
-  } else if (tipo === "escala") {
-    let sx = parseFloat(document.getElementById("sx").value);
-    let sy = parseFloat(document.getElementById("sy").value);
-    // Para escala correta, precisamos escalar a partir da origem
-    m = [
-      [sx, 0, 0],
-      [0, sy, 0],
-      [0, 0, 1],
-    ];
-  } else if (tipo === "rotacao") {
-    let ang = (parseFloat(document.getElementById("angulo").value) * Math.PI) / 180;
-    m = [
-      [Math.cos(ang), -Math.sin(ang), 0],
-      [Math.sin(ang), Math.cos(ang), 0],
-      [0, 0, 1],
-    ];
-  }
-
-  clearCanvas();
-
-  if (ultimoObjeto.tipo === "reta") {
-    let [p1, p2] = ultimoObjeto.pontos;
-    
-    // Aplica a transformação a cada ponto
-    let t1 = multiplicarMatriz([p1[0], p1[1], 1], m);
-    let t2 = multiplicarMatriz([p2[0], p2[1], 1], m);
-    
-    // Desenha a reta transformada
-    retaPontoMedio(t1[0], t1[1], t2[0], t2[1]);
-    
-    // Atualiza o último objeto
-    ultimoObjeto = {
-      tipo: "reta",
-      pontos: [
-        [t1[0], t1[1]],
-        [t2[0], t2[1]],
-      ],
-    };
-  } else if (ultimoObjeto.tipo === "circunferencia") {
-    let [centro] = ultimoObjeto.pontos;
-    let [xc, yc, r] = centro;
-    
-    // Para circunferências, a abordagem correta é redesenhar com o centro transformado
-    // e raio ajustado para escala
-    let novoCentro = multiplicarMatriz([xc, yc, 1], m);
-    
-    // Ajuste do raio para transformações de escala
-    let novoRaio = r;
-    if (tipo === "escala") {
-      // Para escala, usamos a média dos fatores de escala para ajustar o raio
+    if (tipo === "translacao") {
+      let dx = parseFloat(document.getElementById("dx").value);
+      let dy = parseFloat(document.getElementById("dy").value);
+      m = [
+        [1, 0, dx],
+        [0, 1, dy],
+        [0, 0, 1],
+      ];
+    } else if (tipo === "escala") {
       let sx = parseFloat(document.getElementById("sx").value);
       let sy = parseFloat(document.getElementById("sy").value);
-      novoRaio = r * Math.sqrt(sx * sx + sy * sy) / Math.sqrt(2); // Aproximação melhor
+      // Para escala correta, precisamos escalar a partir da origem
+      m = [
+        [sx, 0, 0],
+        [0, sy, 0],
+        [0, 0, 1],
+      ];
+    } else if (tipo === "rotacao") {
+      let ang =
+        (parseFloat(document.getElementById("angulo").value) * Math.PI) / 180;
+      m = [
+        [Math.cos(ang), -Math.sin(ang), 0],
+        [Math.sin(ang), Math.cos(ang), 0],
+        [0, 0, 1],
+      ];
     }
-    
-    // Para rotação, uma circunferência não muda visualmente
-    circPontoMedio(novoCentro[0], novoCentro[1], novoRaio);
-    
-    // Atualiza o último objeto
-    ultimoObjeto = {
-      tipo: "circunferencia",
-      pontos: [[novoCentro[0], novoCentro[1], novoRaio]],
-    };
-  }
-}
 
-  // Deixa a função acessível aos botões inline do HTML
+    clearCanvas();
+
+    if (ultimoObjeto.tipo === "reta") {
+      let [p1, p2] = ultimoObjeto.pontos;
+
+      let t1 = multiplicarMatriz([p1[0], p1[1], 1], m);
+      let t2 = multiplicarMatriz([p2[0], p2[1], 1], m);
+
+      retaPontoMedio(t1[0], t1[1], t2[0], t2[1]);
+
+      ultimoObjeto = {
+        tipo: "reta",
+        pontos: [
+          [t1[0], t1[1]],
+          [t2[0], t2[1]],
+        ],
+      };
+    } else if (ultimoObjeto.tipo === "circunferencia") {
+      let [centro] = ultimoObjeto.pontos;
+      let [xc, yc, r] = centro;
+
+      let novoCentro = multiplicarMatriz([xc, yc, 1], m);
+
+      let novoRaio = r;
+      if (tipo === "escala") {
+        let sx = parseFloat(document.getElementById("sx").value);
+        let sy = parseFloat(document.getElementById("sy").value);
+        novoRaio = (r * Math.sqrt(sx * sx + sy * sy)) / Math.sqrt(2);
+      }
+
+      circPontoMedio(novoCentro[0], novoCentro[1], novoRaio);
+
+      ultimoObjeto = {
+        tipo: "circunferencia",
+        pontos: [[novoCentro[0], novoCentro[1], novoRaio]],
+      };
+    }
+  }
+
   window.aplicarTransformacao = aplicarTransformacao;
 
-  /* ---------- Botões ---------- */
   document.getElementById("desenhar").onclick = desenharCena;
 
   document.getElementById("limpar").onclick = () => {
@@ -171,6 +156,5 @@ function aplicarTransformacao(tipo) {
     clearCanvas();
   };
 
-  /* ---------- Inicialização ---------- */
   clearCanvas();
 });
